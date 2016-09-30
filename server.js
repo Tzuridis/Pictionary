@@ -25,7 +25,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('reset', function(){
-        io.emit('reset');
+       io.emit('reset');
     });
 
     socket.on('disconnect', function () {

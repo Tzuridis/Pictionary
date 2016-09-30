@@ -64,13 +64,18 @@ var pictionary = function () {
         drawing = false;
     });
 
-    function reset() {
-        context.canvas.width = context.canvas.width;
-        $('#guesses').empty();
-        socket.emit('reset', reset);
-    }
+    var reset = function() {
+        context.clearRect(0,0, canvas[0].width, canvas[0].height); 
+        context.beginPath();
+        $('#guesses').children().empty();
+        return;
+    };
 
-    $('#reset').on("click", reset);
+
+    $('#reset').on("click", function(){
+        socket.emit('reset');
+        reset();
+    });
 
     socket.on('reset', reset);
 
