@@ -1,8 +1,37 @@
+var socket = io();
+
 var pictionary = function () {
     var canvas, context;
 
     var drawing = false;
-    var socket = io();
+
+    var username = prompt('What is your nickname?');
+
+    var onKeyDown = function (event) {
+        if (event.keyCode != 13) { // Enter
+            return;
+        }
+        var guess = guessBox.val();
+        socket.emit('onKeyDown', { username: username, guess: guess });
+        guessBox.val('');
+    };
+
+    var guessBox = $('#guess input');
+    guessBox.on('keydown', onKeyDown);
+    // $('#guess input').on('keydown', function (event) {
+    //     if (event.keyCode != 13) { // Enter
+    //         return;
+    //     }
+    //     var guess = $(this).val();
+    //     socket.emit('onKeyDown', guess);
+    //    $(this).val('');
+    // });
+
+
+    socket.on('onKeyDown', function (guess) {
+        $('#guesses').append('<div>' + guess.username + ":" + " " + guess.guess + '</div>');
+    });
+
 
     var draw = function (position) {
         context.beginPath();
@@ -15,8 +44,7 @@ var pictionary = function () {
     context = canvas[0].getContext('2d');
     canvas[0].width = canvas[0].offsetWidth;
     canvas[0].height = canvas[0].offsetHeight;
-    canvas.on('mousdown', function (event) {
-        drawing = true;
+    canvas.on('mousemove', function (event) {
         if (drawing === true) {
             var offset = canvas.offset();
             var position = {
@@ -25,14 +53,30 @@ var pictionary = function () {
             };
             draw(position);
             socket.emit('draw', position);
-             socket.on('draw', position);
+
         }
+    });
+    socket.on('draw', draw);
+    canvas.on('mousedown', function (event) {
+        drawing = true;
     });
     canvas.on('mouseup', function (event) {
         drawing = false;
     });
+
+    function reset() {
+        context.canvas.width = context.canvas.width;
+        $('#guesses').empty();
+        socket.emit('reset', reset);
+    }
+
+    $('#reset').on("click", reset);
+
+    socket.on('reset', reset);
+
 };
 
 $(document).ready(function () {
     pictionary();
+
 });
